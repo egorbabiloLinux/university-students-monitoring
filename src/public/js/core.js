@@ -1,6 +1,4 @@
 function Init() {
-	/*                            LOGIN WINDOW                    */
-	//Init vars
 	var user = jQuery('#user')
 	var loginWindow = jQuery('#login')
 	var loginEmail = jQuery('#email')
@@ -13,7 +11,7 @@ function Init() {
 	var stayOnline = jQuery('#stayOnline')
 	confirmationPasswordDiv.hide()
 	loginMsg.hide()
-	//Set events
+
 	confirmationPassword.keypress(inputKeyPress)
 	loginPassword.keypress(inputKeyPress)
 	loginEmail.keypress(inputKeyPress)
@@ -74,13 +72,13 @@ function Init() {
 		loginMsg.hide()
 		jQuery('#loginSbmt').html('register')
 	})
-	//Check login state
+
 	checkLogin()
-	//Other function
+
 	function inputKeyPress() {
 		if (jQuery(this).val() !== '') jQuery(this).removeClass('error')
 	}
-	//Hide login window and clear state
+
 	function hideWindow() {
 		loginWindow.fadeOut('fast', function () {
 			loginMsg.hide()
@@ -90,7 +88,7 @@ function Init() {
 			pageLogin.click()
 		})
 	}
-	//Do login
+
 	function loginUser() {
 		jQuery
 			.ajax({
@@ -118,7 +116,7 @@ function Init() {
 				}
 			})
 	}
-	//Check login state
+
 	function checkLogin() {
 		user.html('loading...')
 		jQuery
@@ -140,7 +138,7 @@ function Init() {
 				}
 			})
 	}
-	//Do log out
+
 	function logout() {
 		jQuery
 			.ajax({
@@ -159,7 +157,7 @@ function Init() {
 				})
 			})
 	}
-	//Register new user
+
 	function registerUser() {
 		jQuery
 			.ajax({
@@ -188,5 +186,4 @@ function Init() {
 				}
 			})
 	}
-	/*                            LOGIN WINDOW                    */
 }

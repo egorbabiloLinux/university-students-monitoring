@@ -1,13 +1,18 @@
 const validator  = require('validator')
-const logger = require('../logger').logger
+const { logger } = require('../logger')
 
 exports.createUserControllers = function(user) {
     return {
         register: async (req, res) => {
+            let response;
             const email = req.body.email
             const password = req.body.password
             const confirmationPassword = req.body.confirmationPassword
             const stayOnline = req.body.stayOnline
+            const sessionID = req.sessionID
+            const meta = { sessionID, email, password, confirmationPassword, stayOnline }
+
+            logger.info({ meta }, `${req.method} ${req.url}`)
 
             if (
                 !validator.isEmail(email) ||
@@ -16,10 +21,12 @@ exports.createUserControllers = function(user) {
                 password.length < 6 ||
                 password !== confirmationPassword
             ) {
-                res.status(400).json({
-                    error: true,
-                    msg: 'Check your',
-                })
+                response = {
+					error: true,
+					msg: 'Check your credentials',
+				}
+                logger.warn({ response }, 'Validation failed on register')
+                res.status(400).json(response)
 
                 return
             }
@@ -37,31 +44,42 @@ exports.createUserControllers = function(user) {
                 } else {
                     req.session.cookie.expires = false
                 }
-                res.status(200).json({
+
+                response = {
 					error: false,
 					msg: 'Success register email: ' + email,
 					user: { id, email },
-				})
+				}
+                logger.info({ response }, 'Register success')
+                res.status(200).json(response)
             } catch (err) {
-                logger.error({ err: err, email: email }, 'Failed to register user')
-                res.status(400).json({
+                response = {
                     error: true,
                     msg: 'Failed to register user'
-                })
+                }
+                logger.error({ response, err }, 'Failed to register user')
+                res.status(400).json(response)
             }
         },
         login: async (req, res) => {
+            let response
             const email = req.body.email
             const password = req.body.password
             const stayOnline = req.body.stayOnline
+            const sessionID = req.sessionID
+            const meta = { sessionID, email, password, stayOnline }
+
+            logger.info({ meta }, `${req.method} ${req.url}`)
 
             try {
                 const { canLogin, id } = await user.check(email, password)
                 if (!canLogin) {
-                    res.status(400).json({
+                    response = {
                         error: true,
                         msg: 'Check your email or password',
-                    })
+                    }
+                    logger.info({response}, 'User can not login')
+                    res.status(400).json(response)
                     return
                 }
 
@@ -75,42 +93,56 @@ exports.createUserControllers = function(user) {
 					req.session.cookie.expires = false
 				}
 
-                res.status(200).json({
+                response = {
                     error: false,
                     msg: 'Success login email: ' + email,
                     user: { id, email }
-                })
+                }
+                res.status(200).json(response)
             } catch (err) {
-                logger.error({ err: err, email: email }, 'Failed to login user')
-                res.status(401).json({
+                response = {
 					error: true,
 					msg: 'Failed to login user',
-				})
+				}
+                logger.error({ response, err }, 'Failed to login user')
+                res.status(401).json(response)
             }
         },
         logout: async (req, res) => {
+            let response
+            const sessionID = req.sessionID
+			const meta = { sessionID }
+
+            logger.info({ meta }, `${req.method} ${req.url}`)
+
             if (!req.session.authorized) {
-                res.status(400).json({
+                response = {
                     error: true,
                     msg: 'You are not loggined',
-                })
+                }
+                logger.info({ response }, 'User are no loginned')
+                res.status(400).json(response)
                 return
             }
 
             req.session.destroy((err) => {
                 if (err) {
-                    logger.error({ err }, 'Session destroy error')
-                    res.status(500).json({
+                    response = {
                         error: true,
                         msg: 'Logout failed'
-                    })
+                    }
+                    logger.error({ response, err }, 'Session destroy error')
+                    res.status(500).json(response)
+
+                    return
                 }
 
-                res.clearCookie('connect.sid')
-                res.status(200).json({
+                response = {
                     error: false,
                     msg: 'Logout successfully'
-                })
+                }
+                res.clearCookie('connect.sid')
+                res.status(200).json(response)
             })
         }
     }

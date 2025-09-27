@@ -12,7 +12,7 @@ const routers = require('./src/routers')
 global.saldo = 'fewfwef352tFRWEQF'
 const controllers = require('./src/controllers')
 
-const logger = require('./src/logger').logger
+const { logger } = require('./src/logger')
 
 app.set('views', __dirname + '/src/views')
 app.set('view engine', 'ejs')

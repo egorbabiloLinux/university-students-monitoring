@@ -93,11 +93,11 @@ function Init() {
 		jQuery
 			.ajax({
 				type: 'POST',
-				url: '/auth',
+				url: '/auth/login',
 				data: {
 					email: loginEmail.val(),
 					password: loginPassword.val(),
-					stayOnline: stayOnline.val() === '1',
+					stayOnline: stayOnline.is(':checked'),
 				},
 			})
 			.done(function (msg) {
@@ -167,7 +167,7 @@ function Init() {
 					email: loginEmail.val(),
 					password: loginPassword.val(),
 					confirmationPassword: confirmationPassword.val(),
-					stayOnline: stayOnline.val() === '1',
+					stayOnline: stayOnline.is(':checked'),
 				},
 			})
 			.done(function (msg) {

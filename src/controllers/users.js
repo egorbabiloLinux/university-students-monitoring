@@ -1,14 +1,38 @@
 const validator  = require('validator')
-const { logger } = require('../logger')
+const logger = require('../logger')
+const User = require('../models/user')
 
-exports.createUserControllers = function(user) {
+// router.post(
+// 	'/register',
+// 	check('email')
+// 		.isEmail()
+// 		.withMessage('Enter a valid email address')
+// 		.normalizeEmail(),
+// 	check('first_name')
+// 		.not()
+// 		.isEmpty()
+// 		.withMessage('You first name is required')
+// 		.trim()
+// 		.escape(),
+// 	check('last_name')
+// 		.not()
+// 		.isEmpty()
+// 		.withMessage('You last name is required')
+// 		.trim()
+// 		.escape(),
+// 	check('password')
+// 		.notEmpty()
+// 		.isLength({ min: 8 })
+// 		.withMessage('Must be at least 8 chars long'),
+// 	Validate,
+// 	Register
+// )
+
+exports.createUserControllers = function() {
     return {
         register: async (req, res) => {
             let response;
-            const email = req.body.email
-            const password = req.body.password
-            const confirmationPassword = req.body.confirmationPassword
-            const stayOnline = req.body.stayOnline
+            const { email, password, confirmationPassword, stayOnline } = req.body
             const sessionID = req.sessionID
             const meta = { sessionID, email, password, confirmationPassword, stayOnline }
 
@@ -32,7 +56,21 @@ exports.createUserControllers = function(user) {
             }
 
             try {
-                const id = await user.create(email, password)
+                const newUser = new User({email, password})
+
+                const existingUser = await User.findOne({ email })
+                if (existingUser) {
+                    response = {
+                        error: true,
+                        msg: 'User already exists'
+                    }
+                    logger.error({ response }, 'Failed to register user')
+                    res.status(400).json(response)
+                    return
+                }
+
+                const savedUser = await newUser.save()
+                const id = savedUser._id
                 
                 req.session.authorized = true
                 req.session.user_id = id
@@ -45,46 +83,45 @@ exports.createUserControllers = function(user) {
                     req.session.cookie.expires = false
                 }
 
+                const{role, ...user_data} = savedUser._doc
                 response = {
 					error: false,
 					msg: 'Success register email: ' + email,
-					user: { id, email },
+					data: user_data,
 				}
                 logger.info({ response }, 'Register success')
                 res.status(200).json(response)
             } catch (err) {
                 response = {
                     error: true,
-                    msg: 'Failed to register user'
+                    msg: 'Internal storage error'
                 }
                 logger.error({ response, err }, 'Failed to register user')
-                res.status(400).json(response)
+                res.status(500).json(response)
             }
         },
         login: async (req, res) => {
             let response
-            const email = req.body.email
-            const password = req.body.password
-            const stayOnline = req.body.stayOnline
+            const { email, password, stayOnline } = req.body
             const sessionID = req.sessionID
             const meta = { sessionID, email, password, stayOnline }
 
             logger.info({ meta }, `${req.method} ${req.url}`)
 
             try {
-                const { canLogin, id } = await user.check(email, password)
-                if (!canLogin) {
+                const user = await User.check(email, password)
+                if (!user.emailCheck) {
                     response = {
                         error: true,
                         msg: 'Check your email or password',
                     }
-                    logger.info({response}, 'User can not login')
+                    logger.error({response}, 'User can not login')
                     res.status(400).json(response)
                     return
                 }
 
                 req.session.authorized = true
-                req.session.user_id = id
+                req.session.user_id = user._id
                 req.session.email = email
 
                 if (stayOnline) {
@@ -93,10 +130,11 @@ exports.createUserControllers = function(user) {
 					req.session.cookie.expires = false
 				}
 
+                const { role, ...user_data } = user._doc
                 response = {
                     error: false,
                     msg: 'Success login email: ' + email,
-                    user: { id, email }
+                    data: user_data
                 }
                 res.status(200).json(response)
             } catch (err) {

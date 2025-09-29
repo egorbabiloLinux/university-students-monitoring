@@ -1,49 +1,65 @@
 const bcrypt = require('bcrypt')
 const { secretAccessToken } = require('../config/config')
 const jwt = require('jsonwebtoken')
+const mongoose = require('mongoose');
 
-class User {
-    constructor(db) {
-        this.collection = db.collection('users')
+const Schema = mongoose.Schema;
+
+const UserSchema = mongoose.Schema(
+	{
+		email: {
+			type: String,
+			required: 'Your email is required',
+			unique: true,
+			lowercase: true,
+			trim: true,
+		},
+		password: {
+			type: String,
+			required: 'Your password is required',
+			select: false,
+			max: 25,
+		},
+		role: {
+			type: String,
+			required: true,
+			default: '0x01',
+		},
+		emailCheck: {
+			type: Boolean,
+			required: true,
+			default: true,
+		},
+	},
+	{ timestamps: true }
+)
+
+UserSchema.pre('save', async function(next) {
+    const user = this;
+    if (!user.isModified("password")) return next()
+
+    try {
+        const salt = await bcrypt.genSalt(10)
+        this.password = await bcrypt.hash(this.password, salt)
+        next()
+    } catch (err) {
+        next(err)
+    }
+})
+
+UserSchema.statics.check = async function (email, password) {
+    const user = await this.findOne({ email: email.toLowerCase()}).select('+password')
+
+    if (!user) {
+        throw new Error('Failed to find user in database')
     }
 
-    async create(email, password) {
-        const existingUser = await this.collection.findOne({email: email.toLowerCase()})
-        if (existingUser) {
-            throw new Error('User already exists')
-        }
-
-        const hash = await bcrypt.hash(password, 10)
-        const newUser = {
-            email: email.toLowerCase(),
-            password: hash,
-            emailCheck: true,
-            roles: [],
-            createdAt: new Date(),
-        }
-        const result = await this.collection.insertOne(newUser)
-
-        if (!result.acknowledged || result.insertedCount === 0) {
-			throw new Error('Failed to create user in database')
-		}
-
-		return result.insertedId
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+    if (!isPasswordValid) {
+        throw new Error('Invalid password')
     }
 
-    async check(email, password) {
-        const user = await this.collection.findOne({ email: email.toLowerCase() })
-
-        if (!user) {
-			throw new Error('Failed find user in database')
-		}
-
-        const isPasswordValid = await bcrypt.compare(password, user.password)
-        if (!isPasswordValid) {
-            throw new Error('Invalid password')
-        }
-
-        return { canLogin: user.emailCheck, id: user._id }
-    }
+    return user
 }
 
-module.exports = User
+module.exports = mongoose.model('User', UserSchema)

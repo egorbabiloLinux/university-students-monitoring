@@ -3,10 +3,8 @@ const router = express.Router()
 const User = require('../models/user')
 const { createUserControllers } = require('../controllers/users')
 
-module.exports = function(app) {
-    const db = app.locals.db
-    const user = new User(db)
-    const userControllers = createUserControllers(user)
+module.exports = function() {
+    const userControllers = createUserControllers()
 
     router.post('/register', userControllers.register)
     router.post('/login', userControllers.login)

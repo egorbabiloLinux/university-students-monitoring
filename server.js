@@ -8,11 +8,12 @@ const port = process.env.PORT || 3000
 const MongoStore = require('connect-mongo')
 const { dbSettings } = require('./src/config/config')
 const routers = require('./src/routers')
+const mongoose = require('mongoose')
 
 global.saldo = 'fewfwef352tFRWEQF'
 const controllers = require('./src/controllers')
 
-const { logger } = require('./src/logger')
+const logger = require('./src/logger')
 
 app.set('views', __dirname + '/src/views')
 app.set('view engine', 'ejs')
@@ -44,7 +45,17 @@ app.get('/', routers.index); //ПЕРЕДЕЛАТЬ
 try {
 	app.locals.db = await controllers.db.start(dbSettings)
 
-	const authRouters = require('./src/routers/auth')(app)
+	mongoose.set('strictQuery', false)
+	try {
+		await mongoose.connect(dbSettings.url)
+		logger.info('Mongoose connected to database')
+	} catch (err) {
+		logger.error('MongoDB connection failed', err);
+		process.exit(1);
+	}
+
+	const User = require('./src/models/user')
+	const authRouters = require('./src/routers/auth')
 	app.use('/auth', authRouters)
 
 	app.listen(port, () => {

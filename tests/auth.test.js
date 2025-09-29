@@ -5,6 +5,7 @@ const MongoStore = require('connect-mongo')
 const { MongoClient } = require('mongodb')
 const authRoutes = require('../src/routers/auth')
 const { dbSettings } = require('../src/config/config')
+const mongoose = require('mongoose')
 
 describe('Auth API', () => {
 	let app
@@ -14,6 +15,7 @@ describe('Auth API', () => {
 
 	beforeAll(async () => {
 		connection = await MongoClient.connect(dbSettings.url)
+		await mongoose.connect(dbSettings.url)
 		db = connection.db(dbSettings.dbName)
 
 		app = express()
@@ -68,8 +70,9 @@ describe('Auth API', () => {
 			expect(response.body.msg).toContain(
 				'Success register email: test@example.com'
 			)
-			expect(response.body.user.id).toBeDefined()
-			expect(response.body.user.email).toBe('test@example.com')
+
+			expect(response.body.data._id).toBeDefined()
+			expect(response.body.data.email).toBe('test@example.com')
 
 			const user = await db
 				.collection('users')
@@ -90,7 +93,7 @@ describe('Auth API', () => {
 				.expect(200)
 
 			expect(response.body.error).toBe(false)
-			expect(response.body.user.id).toBeDefined()
+			expect(response.body.data._id).toBeDefined()
 
 			const sessions = await db.collection('sessions').find({}).toArray()
 			expect(sessions.length).toBe(1)
@@ -138,16 +141,17 @@ describe('Auth API', () => {
 			expect(response.body.error).toBe(true)
 		})
 
-		it('should return 400 for failed to register user', async () => {
+
+		it('should return 400 for duplicate email', async () => {
 			await request(app)
-			.post('/auth/register')
-			.send({
-				email: 'test@example.com',
-				password: 'password123',
-				confirmationPassword: 'password123',
-				stayOnline: false,
-			})
-			.expect(200)
+				.post('/auth/register')
+				.send({
+					email: 'test@example.com',
+					password: 'password123',
+					confirmationPassword: 'password123',
+					stayOnline: false,
+				})
+				.expect(200)
 
 			const response = await request(app)
 				.post('/auth/register')
@@ -160,9 +164,7 @@ describe('Auth API', () => {
 				.expect(400)
 
 			expect(response.body.error).toBe(true)
-			expect(response.body.msg).toContain('Failed to register user')
-
-			expect(response.body.error).toBe(true)
+			expect(response.body.msg).toContain('User already exists')
 		})
 	})
 
@@ -187,13 +189,14 @@ describe('Auth API', () => {
 				.expect(200)
 
 			expect(response.body.error).toBe(false)
-			expect(response.body.msg).toContain(
-				'Success login email: test@example.com'
-			)
-			expect(response.body.user.email).toBe('test@example.com')
+			expect(response.body.msg).toContain('Success login email: test@example.com')
+			expect(response.body.data).toBeDefined()
+			expect(response.body.data._id).toBeDefined()
+			expect(response.body.data.email).toBe('test@example.com')
 
 			expect(response.headers['set-cookie']).toBeDefined()
 		})
+
 
 		it('should login with stayOnline=true', async () => {
 			const response = await request(app)

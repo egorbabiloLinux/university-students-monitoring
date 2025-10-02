@@ -37,7 +37,7 @@ describe('Auth API', () => {
 		)
 
 		app.locals.db = db
-		const authRouter = require('../src/routers/auth')(app)
+		const authRouter = require('../src/routers/auth')
 		app.use('/auth', authRouter)
 
 		server = app.listen(0)

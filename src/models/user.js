@@ -1,9 +1,5 @@
 const bcrypt = require('bcrypt')
-const { secretAccessToken } = require('../config/config')
-const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose');
-
-const Schema = mongoose.Schema;
 
 const UserSchema = mongoose.Schema(
 	{
@@ -21,9 +17,9 @@ const UserSchema = mongoose.Schema(
 			max: 25,
 		},
 		role: {
-			type: String,
+			type: Number,
 			required: true,
-			default: '0x01',
+			default: 0x01,
 		},
 		emailCheck: {
 			type: Boolean,

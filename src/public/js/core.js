@@ -1,4 +1,4 @@
-function Init() {
+document.addEventListener('DOMContentLoaded', () => {
 	var user = jQuery('#user')
 	var loginWindow = jQuery('#login')
 	var loginEmail = jQuery('#email')
@@ -186,4 +186,5 @@ function Init() {
 				}
 			})
 	}
-}
+})
+

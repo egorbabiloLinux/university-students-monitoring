@@ -91,3 +91,5 @@ const SocialFlags = {
 	ORPHAN: 0x04,
 	DISABLED: 0x08,
 }
+
+module.exports = mongoose.model('Student', StudentSchema)

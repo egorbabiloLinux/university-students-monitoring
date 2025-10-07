@@ -39,6 +39,12 @@ app.use(express.static(__dirname + '/src/public'))
 
 app.get('/', routers.index); //ПЕРЕДЕЛАТЬ
 
+const mapRouter = require('./src/routers/map') // должен быть router
+app.use('/map', mapRouter)
+
+const studentsRouters = require('./src/routers/students')
+app.use('/students', studentsRouters);
+
 // app.get('/auth', routers.auth.getLogin)
 
 (async() => {

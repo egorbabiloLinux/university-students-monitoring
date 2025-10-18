@@ -213,6 +213,15 @@ body{
     white-space: nowrap;
 }
 
+#map-buttons {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+}
+
 .button:hover {
   box-shadow: #121212 0 0 0 2px, transparent 0 0 0 0;
 }

@@ -46,5 +46,63 @@ document.addEventListener('DOMContentLoaded', async () => {
 		map.on('mouseleave', 'students-points', () => {
 			map.getCanvas().style.cursor = ''
 		})
+
+		map.addLayer({
+			id: 'students-heatmap',
+			type: 'heatmap',
+			source: 'students',
+			paint: {
+				'heatmap-weight': 1,
+
+				'heatmap-radius': ['interpolate', 
+					['linear'], 
+					['zoom'],
+					4, 10,  
+					6, 25, 
+					10, 50  
+				],
+
+				'heatmap-color': [
+					'interpolate',
+					['linear'],
+					['heatmap-density'],
+					0, 'rgba(33,102,172,0)',
+					0.2, 'rgb(103,169,207)',
+					0.4, 'rgb(209,229,240)',
+					0.6, 'rgb(253,219,199)',
+					0.8, 'rgb(239,138,98)',
+					1, 'rgb(178,24,43)',
+				],
+
+				'heatmap-intensity': [
+					'interpolate',
+					['linear'],
+					['zoom'],
+					4, 0.8,
+					6, 1.5,
+					10, 3
+				],
+
+				'heatmap-opacity': [
+					'interpolate',
+					['linear'],
+					['zoom'],
+					4, 1,
+					10, 0.7
+				],
+			},
+		})
+
+		map.setLayoutProperty('students-points', 'visibility', 'visible')
+		map.setLayoutProperty('students-heatmap', 'visibility', 'none')
+
+		document.getElementById('btnHeat').addEventListener('click', () => {
+			map.setLayoutProperty('students-points', 'visibility', 'none')
+			map.setLayoutProperty('students-heatmap', 'visibility', 'visible')			
+		})
+		document.getElementById('btnPoints').addEventListener('click', () => {
+			map.setLayoutProperty('students-points', 'visibility', 'visible')
+			map.setLayoutProperty('students-heatmap', 'visibility', 'none')			
+		})
 	})
 })

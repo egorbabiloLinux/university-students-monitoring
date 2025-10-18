@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %> - UniversityStudentsMonitoring</title>
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.8.0/dist/maplibre-gl.css" />
+     <link rel="stylesheet" href="/css/style.css">
     <style>
         body, html, #map {
             margin: 0;
@@ -16,6 +17,12 @@
 </head>
 <body>
     <div id="map"></div>
+
+    <div id="map-buttons">
+        <button id="btnHeat" class="button">Heatmap</button>
+        <button id="btnPoints" class="button">Points</button>
+    </div>
+
     <script src="https://unpkg.com/maplibre-gl@5.8.0/dist/maplibre-gl.js"></script>
     <script src="/js/map.js"></script>
 </body>

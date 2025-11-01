@@ -36,6 +36,10 @@ app.use(express.urlencoded({extended: true}))
 app.use(express.json())
 app.use(methodOverride())
 app.use(express.static(__dirname + '/src/public'))
+app.use((req, res, next) => {
+	res.set('Cache-Control', 'no-store')
+	next()
+})
 
 app.get('/', routers.index); //ПЕРЕДЕЛАТЬ
 

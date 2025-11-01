@@ -109,24 +109,42 @@ exports.createStudentsControllers = function() {
 		},
         studentsAvgLimit: async (req, res) => {
             try {
-                const { avg, hasScholarship } = req.params
+                const { minAvg, hasScholarship } = req.query
                 const query = {}
 
-                logger.info({ query }, `${req.method} ${req.url}`)
-
-                if (avg) {
-                    query.avg = avg
+                if (minAvg) {
+                    query.avgGrade = { $gt: Number(minAvg) }
                 }
                 if (hasScholarship !== undefined) {
                     query.hasScholarship = hasScholarship === 'true'
                 }
 
-                const students =  await Student.find(query).lean()
+                logger.info({ query }, `${req.method} ${req.url}`)
+
+                const students = await Student.find(query).lean()
+                students.sort((a,b) => b.avgGrade - a.avgGrade)
+
+                const totalStudents = await Student.find().lean()
+                const deprivedPercentage = (1 - students.length / totalStudents.length) * 100
+
+                function countScholarships(students) {
+                    return students.map(s => Number(s.scholarship) || 0).reduce((a, b) => a + b, 0)
+                }
+
+                const allPayments = countScholarships(totalStudents)
+                const leftPayments = countScholarships(students)
+                const paymentsReduction = allPayments - leftPayments
 
                 response = {
                     error: false,
                     students: students,
+                    deprivedPercentage: deprivedPercentage,
+                    paymentsReduction: paymentsReduction,
                 }
+                logger.info({ deprivedPercentage, paymentsReduction }, 'Students info sent')
+                res.set('Cache-Control', 'no-store')
+
+                res.status(200).json(response)
             } catch(err) {
                 response = {
                     error: true, 

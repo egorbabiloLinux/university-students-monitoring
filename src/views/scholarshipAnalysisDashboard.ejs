@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Анализ стипендий</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="p-4">
+    <div class="analysis-container">
+        <div class="analysis-panel">
+            <h2>Оценка изменения минимального среднего балла</h2>
+
+            <div class="analysis-input-block">
+                <input type="number" id="minAvg" min="0" max="10" step="0.1"
+                    placeholder="Например, 7.5" class="analysis-input">
+                <button class="button" id="analyzeBtn">Рассчитать</button>
+            </div>
+
+            <div id="error" class="analysis-error"></div>
+        </div>
+
+        <div id="results" class="analysis-results">
+            <h3>Результаты анализа:</h3>
+            <p id="deprived" class="analysis-result-text"></p>
+            <p id="savings" class="analysis-result-text"></p>
+
+            <table id="studentsTable" class="students-analysis-table">
+            <thead>
+                <tr>
+                    <th>Имя</th>
+                    <th>Факультет</th>
+                    <th>Средний балл</th>
+                    <th>Стипендия</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('analyzeBtn').addEventListener('click', async () => {
+            const minAvg = document.getElementById('minAvg').value;
+            const errorBox = document.getElementById('error');
+            const results = document.getElementById('results');
+            errorBox.style.display = 'none';
+            results.style.display = 'none';
+
+            if (!minAvg) {
+                errorBox.textContent = 'Введите значение минимального среднего балла';
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/analysis/studentsAvgLimit?minAvg=${minAvg}&hasScholarship=true`);
+                if (!res.ok) throw new Error('Ошибка при получении данных');
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.msg || 'Ошибка на сервере');
+
+                const tbody = document.querySelector('#studentsTable tbody')
+
+                data.students.forEach(s => {
+                const tr = document.createElement('tr')
+
+                tr.innerHTML = `
+                    <td>${s.lastName} ${s.firstName}</td>
+                    <td>${s.faculty}</td>
+                    <td>${s.group}</td>
+                    <td>${s.scholarship ?? '—'}</td>
+                `
+
+                tbody.appendChild(tr)
+                })
+
+                document.getElementById('deprived').textContent =
+                    `Отчислено студентов: ${data.deprivedPercentage.toFixed(2)}%`;
+
+                document.getElementById('savings').textContent =
+                    `Экономия бюджета на стипендиях: ${data.paymentsReduction.toFixed(2)} руб.`;
+
+                results.style.display = 'block';
+            } catch (err) {
+                errorBox.textContent = err.message;
+                errorBox.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

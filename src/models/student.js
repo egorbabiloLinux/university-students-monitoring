@@ -77,10 +77,30 @@ const StudentSchema = mongoose.Schema({
 			max: [10, 'Score cannot be more than 10'],
 		},
 	},
+	hasScholarship: {
+		type: Boolean, 
+		default: false, 
+		required: true,
+	},
+	avgGrade: Number,
+	scholarShip: Number,
     socialStatus: {
         type: Number,
         default: 0x00,
     }
+})
+
+StudentSchema.pre('save', async function (next) {
+	const student = this;
+	if (!student.isModified('grades') || !student.hasScholarship) return next()
+
+	const values = student.grades ? Object.values(student.grades) : []
+	try {
+		student.avgGrade = values.length ? values.reduce((a,b) => a + b, 0) / values.length : null
+		next()
+	} catch(err) {
+		next(err)
+	}
 })
 
 StudentSchema.index({ 'hometown.location': '2dsphere' })

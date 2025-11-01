@@ -1,7 +1,8 @@
 const express = require('express')
 const router = express.Router()
+const checkAuth = require('../middleware/authMiddleware')
 
-router.get('/', (req, res) => {
+router.get('/', checkAuth, (req, res) => {
 	res.render('map', { title: 'Map' })
 });
 

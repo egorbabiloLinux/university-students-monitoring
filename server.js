@@ -43,7 +43,10 @@ const mapRouter = require('./src/routers/map') // должен быть router
 app.use('/map', mapRouter)
 
 const studentsRouters = require('./src/routers/students')
-app.use('/students', studentsRouters);
+app.use('/students', studentsRouters)
+
+const analysisRouter = require('./src/routers/analysis')
+app.use('/analysis', analysisRouter);
 
 // app.get('/auth', routers.auth.getLogin)
 

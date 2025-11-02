@@ -309,8 +309,8 @@ body{
 
 .students-analysis-table {
     width: 100%;
-    max-width: 700px;
-    margin: 20px auto;
+    max-width: none; 
+    margin: 20px 0;
     border-collapse: collapse;
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(6px);
@@ -337,6 +337,11 @@ body{
     transition: background-color 0.2s;
 }
 
+.analysis-summary {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
 
 #analyzeBtn {
     padding: 0.8rem 1rem; /* увеличит высоту кнопки */

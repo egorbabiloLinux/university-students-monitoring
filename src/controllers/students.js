@@ -2,10 +2,7 @@ const Student = require('../models/student')
 const logger = require('../logger')
 
 function calculateRisk(student) {
-	const grades = Object.values(student.grades || {})
-	const avgGrade = grades.length
-		? grades.reduce((a, b) => a + b, 0) / grades.length
-		: 0
+	const avgGrade = student.avgGrade
 
 	let risk = (10 - avgGrade) * 10
 	let reasons = []
@@ -121,25 +118,80 @@ exports.createStudentsControllers = function() {
 
                 logger.info({ query }, `${req.method} ${req.url}`)
 
-                const students = await Student.find(query).lean()
-                students.sort((a,b) => b.avgGrade - a.avgGrade)
+                const sortedStudents = await Student.find(query).lean()
 
-                const totalStudents = await Student.find().lean()
-                const deprivedPercentage = (1 - students.length / totalStudents.length) * 100
+                const totalStudents = await Student.find({hasScholarship: true}).lean()
+                totalStudents.sort((a, b) => b.avgGrade - a.avgGrade)
+
+                const deprivedPercentage = (1 - sortedStudents.length / totalStudents.length) * 100
 
                 function countScholarships(students) {
                     return students.map(s => Number(s.scholarship) || 0).reduce((a, b) => a + b, 0)
                 }
 
                 const allPayments = countScholarships(totalStudents)
-                const leftPayments = countScholarships(students)
+                const leftPayments = countScholarships(sortedStudents)
                 const paymentsReduction = allPayments - leftPayments
+
+                function calculateSocialRisk(socialStatus) {
+                    const riskWeights = {
+                        0x01: 0.3,
+                        0x02: 0.5,
+                        0x04: 0.7, 
+                        0x08: 1.0,
+                    }
+
+                    let maxRisk = 0
+
+                    for (const [bitStr, weight] of Object.entries(riskWeights)) {
+                        const bit = parseInt(bitStr)
+                        if ((socialStatus & bit) !== 0) {
+                            maxRisk = Math.max(maxRisk, weight)
+                        }
+                    }
+
+                    return maxRisk
+                }
+
+                const maxGap = Math.max(...totalStudents.map(s => minAvg - s.avgGrade))
+
+                function calculateMetrics(s) {
+                    const gradeGap = Math.max(0, minAvg - s.avgGrade)
+                    const normalizedGap = Math.max(0, Math.min(1, 1 - gradeGap / maxGap));
+                    const socialRisk = calculateSocialRisk(s.socialStatus)
+                    return  {
+                        gradeGap: gradeGap,
+                        riskProbability: Math.max(0, Math.min(1, (minAvg - s.avgGrade) / 2)),
+                        socialRisk: socialRisk,
+                        normalizedGap: normalizedGap,
+                        improvementProbability: gradeGap > 0 ? normalizedGap * (1 - socialRisk) : 0,
+                    }
+				}
+
+                const enriched = totalStudents.map(s => ({
+                    ...s,
+                    ...calculateMetrics(s),
+                }))
+                enriched.sort((a, b) => b.avgGrade - a.avgGrade)
+                
+                const deprivedStudents = enriched.filter(s => s.avgGrade < minAvg)
+                const highImprovementCount = deprivedStudents.filter(s => s.improvementProbability > 0.7).length
+                const improvementProbabilityShare = deprivedStudents.length ? highImprovementCount / deprivedStudents.length : 0
+                const EPS = 0.05
+                const stabilityIndex = (1 - deprivedPercentage / 100) * Math.sqrt(improvementProbabilityShare + EPS)
+                const avgLossIndex = deprivedStudents.reduce((sum, s) => {
+                    const diff = Math.max(0, minAvg - s.avgGrade)
+                    return sum + (diff / minAvg) 
+                }, 0) / deprivedStudents.length
 
                 response = {
                     error: false,
-                    students: students,
+                    students: enriched,
                     deprivedPercentage: deprivedPercentage,
                     paymentsReduction: paymentsReduction,
+                    improvementProbabilityShare: improvementProbabilityShare * 100,
+                    stabilityIndex: stabilityIndex,
+                    avgLossIndex: avgLossIndex,
                 }
                 logger.info({ deprivedPercentage, paymentsReduction }, 'Students info sent')
                 res.set('Cache-Control', 'no-store')

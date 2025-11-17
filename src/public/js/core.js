@@ -7,9 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	var pageLogin = jQuery('#pageLogin')
 	var pageRegister = jQuery('#pageRegister')
 	var confirmationPasswordDiv = jQuery('#confirmationPasswordDiv')
+	var roleDiv = jQuery('#roleDiv')
 	var loginMsg = jQuery(jQuery('.msg', loginWindow)[0])
 	var stayOnline = jQuery('#stayOnline')
+	var roleSelect = jQuery('#role')
 	confirmationPasswordDiv.hide()
+	roleDiv.hide()
 	loginMsg.hide()
 
 	confirmationPassword.keypress(inputKeyPress)
@@ -62,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		pageLogin.addClass('active')
 		pageRegister.removeClass('active')
 		confirmationPasswordDiv.hide()
+		roleDiv.hide()
 		loginMsg.hide()
 		jQuery('#loginSbmt').html('login')
 	})
@@ -69,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		pageLogin.removeClass('active')
 		pageRegister.addClass('active')
 		confirmationPasswordDiv.show()
+		roleDiv.show()
 		loginMsg.hide()
 		jQuery('#loginSbmt').html('register')
 	})
@@ -85,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			confirmationPassword.removeClass('error')
 			loginPassword.removeClass('error')
 			loginEmail.removeClass('error')
+			roleSelect.removeClass('error')
 			pageLogin.click()
 		})
 	}
@@ -167,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					email: loginEmail.val(),
 					password: loginPassword.val(),
 					confirmationPassword: confirmationPassword.val(),
+					role: parseInt(roleSelect.val()),
 					stayOnline: stayOnline.is(':checked'),
 				},
 			})

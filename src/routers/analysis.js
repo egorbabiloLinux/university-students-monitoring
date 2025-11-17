@@ -1,13 +1,16 @@
 const express = require('express')
 const router = express.Router()
-const checkAuth = require('../middleware/authMiddleware')
+const checkRole = require('../middleware/checkRole')
+const User = require('../models/user')
+const { USER_ROLES } = User
 const { createStudentsControllers } = require('../controllers/students')
 const Student = require('../models/student')
 const logger = require('../logger')
 
 const studentsControllers = createStudentsControllers()
 
-router.get('/riskDashboard'/*, checkAuth*/, async (req, res) => {
+// Все авторизованные пользователи могут просматривать аналитику
+router.get('/riskDashboard', checkRole(USER_ROLES.TEACHER, USER_ROLES.DEANERY, USER_ROLES.ADMIN), async (req, res) => {
 	try {
 		const students = await Student.find({}).lean()
 		const faculties = [...new Set(students.map(s => s.faculty))].sort()
@@ -25,7 +28,7 @@ router.get('/riskDashboard'/*, checkAuth*/, async (req, res) => {
 	}
 })
 
-router.get('/scholarshipAnalysis', async(req, res) => {
+router.get('/scholarshipAnalysis', checkRole(USER_ROLES.TEACHER, USER_ROLES.DEANERY, USER_ROLES.ADMIN), async(req, res) => {
 	try {
 		const students = await Student.find({}).lean()
 		const faculties = [...new Set(students.map(s => s.faculty))].sort()
@@ -43,7 +46,7 @@ router.get('/scholarshipAnalysis', async(req, res) => {
 	}
 })
 
-router.get('/studentsRisk', studentsControllers.studentsRisk)
-router.get('/studentsAvgLimit', studentsControllers.studentsAvgLimit)
+router.get('/studentsRisk', checkRole(USER_ROLES.TEACHER, USER_ROLES.DEANERY, USER_ROLES.ADMIN), studentsControllers.studentsRisk)
+router.get('/studentsAvgLimit', checkRole(USER_ROLES.TEACHER, USER_ROLES.DEANERY, USER_ROLES.ADMIN), studentsControllers.studentsAvgLimit)
 
 module.exports = router

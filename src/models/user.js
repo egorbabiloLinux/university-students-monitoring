@@ -1,6 +1,12 @@
 const bcrypt = require('bcrypt')
 const mongoose = require('mongoose');
 
+const USER_ROLES = {
+	ADMIN: 0x01,      // Администратор - полный доступ ко всем функциям
+	DEANERY: 0x02,    // Сотрудник деканата - управление студентами, стипендиями, отчеты
+	TEACHER: 0x04     // Преподаватель - просмотр данных о студентах
+}
+
 const UserSchema = mongoose.Schema(
 	{
 		email: {
@@ -19,7 +25,7 @@ const UserSchema = mongoose.Schema(
 		role: {
 			type: Number,
 			required: true,
-			default: 0x01,
+			default: USER_ROLES.TEACHER,
 		},
 		emailCheck: {
 			type: Boolean,
@@ -59,3 +65,4 @@ UserSchema.statics.check = async function (email, password) {
 }
 
 module.exports = mongoose.model('User', UserSchema)
+module.exports.USER_ROLES = USER_ROLES

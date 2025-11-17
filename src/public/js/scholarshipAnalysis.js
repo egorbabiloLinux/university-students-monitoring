@@ -76,7 +76,7 @@ function renderStudents(data, minAvg) {
                 <td>${s.faculty}</td>
                 <td>${s.group}</td>
                 <td>${s.avgGrade.toFixed(1)}</td>
-                <td>${s.scholarship ?? '—'}</td>
+                <td>${s.scholarShip ?? '—'}</td>
                 <td>${s.gradeGap.toFixed(1)}</td>
                 <td>${s.riskProbability.toFixed(1)}</td>
                 <td>${s.socialRisk}</td>
@@ -145,97 +145,6 @@ function renderAnalysis(data) {
 let histogramImprovementChart = null
 let histogramRiskChart = null
 
-function buildHistogram(data, bucketsCount = 10) {
-	// Создаем bucketsCount корзин (диапазонов) от 0 до 1
-	const buckets = Array(bucketsCount).fill(0)
-	const bucketSize = 1 / bucketsCount
-
-	data.forEach(value => {
-		let idx = Math.floor(value / bucketSize)
-		if (idx === bucketsCount) idx = bucketsCount - 1 // крайнее значение 1 попадает в последний бакет
-		buckets[idx]++
-	})
-
-	// Метки для оси X (диапазоны)
-	const labels = []
-	for (let i = 0; i < bucketsCount; i++) {
-		const from = (i * bucketSize).toFixed(2)
-		const to = ((i + 1) * bucketSize).toFixed(2)
-		labels.push(`${from}–${to}`)
-	}
-
-	return { labels, buckets }
-}
-
-function renderHistograms(students) {
-	// Данные для вероятности достижения порога
-	const improvementData = students.map(s => s.improvementProbability)
-	const { labels: impLabels, buckets: impBuckets } =
-		buildHistogram(improvementData)
-
-	// Данные для вероятности потери стипендии
-	const riskData = students.map(s => s.riskProbability)
-	const { labels: riskLabels, buckets: riskBuckets } = buildHistogram(riskData)
-
-	const ctxImp = document
-		.getElementById('histogramImprovement')
-		.getContext('2d')
-	const ctxRisk = document.getElementById('histogramRisk').getContext('2d')
-
-	if (histogramImprovementChart) histogramImprovementChart.destroy()
-	if (histogramRiskChart) histogramRiskChart.destroy()
-
-	histogramImprovementChart = new Chart(ctxImp, {
-		type: 'bar',
-		data: {
-			labels: impLabels,
-			datasets: [
-				{
-					label: 'Количество студентов',
-					data: impBuckets,
-					backgroundColor: 'rgba(75, 192, 192, 0.7)',
-				},
-			],
-		},
-		options: {
-			scales: {
-				y: {
-					beginAtZero: true,
-					title: { display: true, text: 'Студенты' },
-				},
-				x: {
-					title: { display: true, text: 'Вероятность достижения порога' },
-				},
-			},
-		},
-	})
-
-	histogramRiskChart = new Chart(ctxRisk, {
-		type: 'bar',
-		data: {
-			labels: riskLabels,
-			datasets: [
-				{
-					label: 'Количество студентов',
-					data: riskBuckets,
-					backgroundColor: 'rgba(255, 99, 132, 0.7)',
-				},
-			],
-		},
-		options: {
-			scales: {
-				y: {
-					beginAtZero: true,
-					title: { display: true, text: 'Студенты' },
-				},
-				x: {
-					title: { display: true, text: 'Вероятность потери стипендии' },
-				},
-			},
-		},
-	})
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
     document.querySelector('#results h3').style.display = 'none'
 	const data = await loadStudentsData('/analysis/studentsAvgLimit?hasScholarship=true')
@@ -260,7 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${s.faculty}</td>
                 <td>${s.group}</td>
                 <td>${s.avgGrade.toFixed(1)}</td>
-                <td>${s.scholarship ?? '—'}</td>
+                <td>${s.scholarShip ?? '—'}</td>
             `
 
         tbody.appendChild(tr)
@@ -290,8 +199,6 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
         renderStudents(data, minAvg)
 
         renderAnalysis(data)
-
-        renderHistograms(data.students)
 
 		results.style.display = 'block'
         resultsTitle.style.display = 'block'

@@ -1,8 +1,10 @@
 const express = require('express')
 const router = express.Router()
-const checkAuth = require('../middleware/authMiddleware')
+const checkRole = require('../middleware/checkRole')
+const User = require('../models/user')
+const { USER_ROLES } = User
 
-router.get('/', checkAuth, (req, res) => {
+router.get('/', checkRole(USER_ROLES.TEACHER, USER_ROLES.DEANERY, USER_ROLES.ADMIN), (req, res) => {
 	res.render('map', { title: 'Map' })
 });
 

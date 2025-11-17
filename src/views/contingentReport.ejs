@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Отчет по контингенту вуза</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="p-4">
+    <div class="analysis-container">
+        <div class="control-panel">
+            <h2>Генерация отчета по контингенту вуза</h2>
+            
+            <div id="message" class="message"></div>
+
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label for="startDate">Начало периода:</label>
+                    <input type="date" id="startDate" class="filter-select" value="<%= startDate %>">
+                </div>
+
+                <div class="filter-group">
+                    <label for="endDate">Конец периода:</label>
+                    <input type="date" id="endDate" class="filter-select" value="<%= endDate %>">
+                </div>
+            </div>
+
+            <div class="filter-button-container">
+                <button class="button" id="generateBtn">Сгенерировать отчет</button>
+                <button class="button hidden-button" id="exportBtn">Экспортировать в Excel</button>
+            </div>
+        </div>
+
+        <div id="reportContainer" class="students-table-container hidden-container">
+            <h3>Отчет по контингенту вуза</h3>
+            
+            <div id="reportSummary" class="report-summary"></div>
+            
+            <div id="reportTables"></div>
+        </div>
+    </div>
+
+    <script src="/js/contingentReport.js"></script>
+</body>
+</html>
+

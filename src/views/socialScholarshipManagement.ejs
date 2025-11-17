@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Массовое управление социальной стипендией</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="p-4">
+    <div class="social-scholarship-container">
+        <div class="control-panel">
+            <h2>Массовое управление социальной стипендией</h2>
+            
+            <div id="message" class="message"></div>
+
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label for="facultyFilter">Факультет:</label>
+                    <select id="facultyFilter" class="filter-select">
+                        <option value="">Все факультеты</option>
+                        <% faculties.forEach(faculty => { %>
+                            <option value="<%= faculty %>" <%= selected.faculty === faculty ? 'selected' : '' %>><%= faculty %></option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="groupFilter">Группа:</label>
+                    <select id="groupFilter" class="filter-select">
+                        <option value="">Все группы</option>
+                        <% groups.forEach(group => { %>
+                            <option value="<%= group %>" <%= selected.group === group ? 'selected' : '' %>><%= group %></option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Социальное положение:</label>
+                    <div class="social-status-selector">
+                        <div class="social-status-option">
+                            <input type="checkbox" id="statusLostBreadwinner" value="0x01">
+                            <label for="statusLostBreadwinner">Потеря кормильца</label>
+                        </div>
+                        <div class="social-status-option">
+                            <input type="checkbox" id="statusStateSupport" value="0x02">
+                            <label for="statusStateSupport">Государственная поддержка</label>
+                        </div>
+                        <div class="social-status-option">
+                            <input type="checkbox" id="statusOrphan" value="0x04">
+                            <label for="statusOrphan">Сирота</label>
+                        </div>
+                        <div class="social-status-option">
+                            <input type="checkbox" id="statusDisabled" value="0x08">
+                            <label for="statusDisabled">Инвалид</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+
+            <div class="filter-button-container">
+                <button class="button" id="filterBtn">Применить фильтры</button>
+            </div>
+
+            <div class="action-buttons">
+                <button class="button" id="assignBtn">Назначить социальную стипендию</button>
+                <button class="button" id="removeBtn">Снять социальную стипендию</button>
+            </div>
+        </div>
+
+        <div class="students-table-container">
+            <h3>Список студентов</h3>
+            <table class="students-table" id="studentsTable">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="selectAll" class="select-all-checkbox">
+                        </th>
+                        <th>ФИО</th>
+                        <th>Факультет</th>
+                        <th>Группа</th>
+                        <th>Социальное положение</th>
+                        <th>Стипендия</th>
+                    </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                    <tr>
+                        <td colspan="6" class="empty-table-message">
+                            Нажмите "Применить фильтры" для загрузки списка студентов
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="/js/socialScholarshipManagement.js"></script>
+</body>
+</html>
+

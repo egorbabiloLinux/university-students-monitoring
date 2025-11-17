@@ -1,6 +1,7 @@
 const validator  = require('validator')
 const logger = require('../logger')
 const User = require('../models/user')
+const { USER_ROLES } = User
 
 // router.post(
 // 	'/register',
@@ -32,11 +33,28 @@ exports.createUserControllers = function() {
     return {
         register: async (req, res) => {
             let response;
-            const { email, password, confirmationPassword, stayOnline } = req.body
+            const { email, password, confirmationPassword, role, stayOnline } = req.body
             const sessionID = req.sessionID
-            const meta = { sessionID, email, password, confirmationPassword, stayOnline }
+            const meta = { sessionID, email, password, confirmationPassword, role, stayOnline }
 
             logger.info({ meta }, `${req.method} ${req.url}`)
+
+            let userRole = USER_ROLES.TEACHER
+            if (role !== undefined && role !== null) {
+                const roleNum = parseInt(role)
+                const validRoles = [USER_ROLES.ADMIN, USER_ROLES.DEANERY, USER_ROLES.TEACHER]
+                if (validRoles.includes(roleNum)) {
+                    userRole = roleNum
+                } else {
+                    response = {
+                        error: true,
+                        msg: 'Invalid role selected',
+                    }
+                    logger.warn({ response }, 'Invalid role on register')
+                    res.status(400).json(response)
+                    return
+                }
+            }
 
             if (
                 !validator.isEmail(email) ||
@@ -56,7 +74,7 @@ exports.createUserControllers = function() {
             }
 
             try {
-                const newUser = new User({email, password})
+                const newUser = new User({email, password, role: userRole})
 
                 const existingUser = await User.findOne({ email })
                 if (existingUser) {
@@ -75,6 +93,7 @@ exports.createUserControllers = function() {
                 req.session.authorized = true
                 req.session.user_id = id
                 req.session.email = email
+                req.session.role = savedUser.role
                 req.session.createdAt = new Date()
 
                 if (stayOnline) {
@@ -123,6 +142,7 @@ exports.createUserControllers = function() {
                 req.session.authorized = true
                 req.session.user_id = user._id
                 req.session.email = email
+                req.session.role = user.role
 
                 if (stayOnline) {
 					req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000

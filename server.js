@@ -52,6 +52,15 @@ app.use('/students', studentsRouters)
 const analysisRouter = require('./src/routers/analysis')
 app.use('/analysis', analysisRouter);
 
+const socialScholarshipRouter = require('./src/routers/socialScholarship')
+app.use('/socialScholarship', socialScholarshipRouter);
+
+const reportsRouter = require('./src/routers/reports')
+app.use('/reports', reportsRouter);
+
+const scholarshipCalculationRouter = require('./src/routers/scholarshipCalculation')
+app.use('/scholarshipCalculation', scholarshipCalculationRouter);
+
 // app.get('/auth', routers.auth.getLogin)
 
 (async() => {

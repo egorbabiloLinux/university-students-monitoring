@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Расчет стипендий</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="p-4">
+    <div class="analysis-container">
+        <div class="control-panel">
+            <h2>Расчет стипендий</h2>
+            
+            <div id="message" class="message"></div>
+
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label for="facultyFilter">Факультет:</label>
+                    <select id="facultyFilter" class="filter-select">
+                        <option value="">Все факультеты</option>
+                        <% faculties.forEach(faculty => { %>
+                            <option value="<%= faculty %>"><%= faculty %></option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="groupFilter">Группа:</label>
+                    <select id="groupFilter" class="filter-select">
+                        <option value="">Все группы</option>
+                        <% groups.forEach(group => { %>
+                            <option value="<%= group %>"><%= group %></option>
+                        <% }); %>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label for="minGrade">Минимальный балл для стипендии:</label>
+                    <input type="number" id="minGrade" class="filter-select" min="0" max="10" step="0.1" value="5.0">
+                </div>
+
+                <div class="filter-group">
+                    <label for="baseScholarship">Базовая стипендия (руб.):</label>
+                    <input type="number" id="baseScholarship" class="filter-select" min="0" step="100" value="2000">
+                </div>
+            </div>
+
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label for="excellentCoefficient">Коэффициент для отличников (≥9.0):</label>
+                    <input type="number" id="excellentCoefficient" class="filter-select" min="1" max="3" step="0.1" value="1.5">
+                </div>
+
+                <div class="filter-group">
+                    <label for="goodCoefficient">Коэффициент для хорошистов (≥7.0):</label>
+                    <input type="number" id="goodCoefficient" class="filter-select" min="1" max="3" step="0.1" value="1.2">
+                </div>
+            </div>
+
+            <div class="filter-button-container">
+                <button class="button" id="calculateBtn">Рассчитать</button>
+                <button class="button hidden-button" id="applyBtn">Применить изменения</button>
+            </div>
+        </div>
+
+        <div id="resultsContainer" class="students-table-container hidden-container">
+            <h3>Результаты расчета</h3>
+            
+            <div id="summaryContainer" class="report-summary"></div>
+            
+            <div id="resultsTable"></div>
+        </div>
+    </div>
+
+    <script src="/js/scholarshipCalculation.js"></script>
+</body>
+</html>
+

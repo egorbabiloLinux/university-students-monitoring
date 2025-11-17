@@ -10,7 +10,7 @@ module.exports = function verify(req, res, next) {
     }
 
     if (session.maxAge) {
-        const now = new Date.now()
+        const now = Date.now()
         const sessionStart = new Date(session.createdAt).getTime()
         if (now - sessionStart > session.maxAge) {
             req.session.destroy(err => {
@@ -26,6 +26,7 @@ module.exports = function verify(req, res, next) {
     req.user = {
         id: session.user_id,
         email: session.email,
+        role: session.role,
     }
 
     next()
